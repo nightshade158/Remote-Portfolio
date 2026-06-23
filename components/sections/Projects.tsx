@@ -5,70 +5,64 @@ import { useRef, useState } from 'react'
 import SectionWrapper from '@/components/ui/SectionWrapper'
 import type { Project } from '@/lib/db/schema'
 
+function getContent(p: Project) {
+  return p.points?.length ? p.points : p.description ? [p.description] : []
+}
+
 export default function Projects({ items }: { items: Project[] }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-
-  const toggleExpand = (id: string) =>
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+  const [descModal, setDescModal] = useState<Project | null>(null)
+  const [imageModal, setImageModal] = useState<string | null>(null)
 
   return (
     <SectionWrapper id="projects" title="Projects">
       <div ref={ref} className="flex overflow-x-auto gap-6 snap-x snap-mandatory pb-4">
         {items.map((project, idx) => {
-          const isExpanded = expanded[project.id]
-          const content = project.points?.length
-            ? project.points
-            : project.description
-              ? [project.description]
-              : []
-          const truncated = !isExpanded && content.length > 2
+          const content = getContent(project)
 
           return (
             <motion.div
               key={project.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
               whileHover={{ y: -5 }}
-              className="snap-start shrink-0 w-[340px] lg:w-[380px] h-[480px] glass rounded-2xl p-6 border-glow hover:glow-cyan-sm transition-all duration-300 flex flex-col overflow-hidden"
+              className="snap-start shrink-0 w-[340px] lg:w-[380px] h-[480px] glass rounded-2xl p-6 border-glow hover:glow-cyan-sm transition-all duration-300 flex flex-col items-center overflow-hidden"
             >
               {project.imageUrl && (
-                <div className="relative w-full h-48 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl shrink-0">
+                <div
+                  className="w-24 h-24 rounded-full overflow-hidden mb-4 shrink-0 cursor-pointer ring-2 ring-slate-700 hover:ring-cyan-neon/50 transition-all"
+                  onClick={() => setImageModal(project.imageUrl!)}
+                >
                   <img
                     src={project.imageUrl}
                     alt={project.title}
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent" />
                 </div>
               )}
-              {project.featured && (
-                <span className="inline-block mb-3 text-xs font-mono text-cyan-neon border border-cyan-neon/30 rounded px-2 py-0.5 w-fit">
-                  ★ Featured
-                </span>
+              <h3 className="text-white font-semibold text-lg mb-1 text-center">{project.title}</h3>
+              {project.year && (
+                <p className="text-xs font-mono text-slate-500 mb-3">{project.year}</p>
               )}
-              <h2 className="text-white font-semibold text-lg mb-2">{project.title}</h2>
               {content.length > 0 && (
-                <div className="flex-1 mb-4">
-                  {(truncated ? content.slice(0, 2) : content).map((point, i) => (
+                <div
+                  className="flex-1 mb-4 w-full cursor-pointer"
+                  onClick={() => setDescModal(project)}
+                >
+                  {content.slice(0, 2).map((point, i) => (
                     <p key={i} className="text-slate-400 text-sm leading-relaxed flex gap-2 mb-1">
                       <span className="text-cyan-neon mt-0.5 shrink-0">▸</span>
                       <span>{point}</span>
                     </p>
                   ))}
                   {content.length > 2 && (
-                    <button
-                      onClick={() => toggleExpand(project.id)}
-                      className="text-xs font-mono text-indigo-400 hover:text-indigo-300 mt-1 transition-colors"
-                    >
-                      {isExpanded ? 'Show less ↑' : `Show all ${content.length} points ↓`}
-                    </button>
+                    <p className="text-xs font-mono text-indigo-400 mt-2 text-center">Click to expand</p>
                   )}
                 </div>
               )}
-              <div className="flex flex-wrap gap-2 mb-5">
+              <div className="flex flex-wrap gap-2 mb-5 justify-center">
                 {project.techStack?.map(tech => (
                   <span
                     key={tech}
@@ -107,6 +101,46 @@ export default function Projects({ items }: { items: Project[] }) {
           <p className="text-slate-600 font-mono text-sm w-full text-center">No projects added yet.</p>
         )}
       </div>
+
+      {descModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setDescModal(null)}
+        >
+          <div
+            className="bg-[#12121a] border border-[#27272f] rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-white font-semibold text-lg mb-3">{descModal.title}</h3>
+            {getContent(descModal).map((point, i) => (
+              <p key={i} className="text-slate-300 text-sm leading-relaxed flex gap-2 mb-2">
+                <span className="text-cyan-neon mt-0.5 shrink-0">▸</span>
+                <span>{point}</span>
+              </p>
+            ))}
+            <button
+              onClick={() => setDescModal(null)}
+              className="mt-4 text-xs font-mono text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {imageModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setImageModal(null)}
+        >
+          <img
+            src={imageModal}
+            alt="Enlarged"
+            className="max-w-[90vw] max-h-[90vh] rounded-2xl"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
     </SectionWrapper>
   )
 }

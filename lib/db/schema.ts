@@ -53,6 +53,7 @@ export const projects = pgTable('projects', {
   liveLink: text('live_link'),
   imageUrl: text('image_url'),
   featured: boolean('featured').default(false),
+  year: text('year'),
   order: integer('order').default(0),
   createdAt: timestamp('created_at').defaultNow()
 })
