@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePathname, useRouter } from 'next/navigation'
 
 const navLinks = [
   { href: '#about', label: 'About' },
@@ -13,6 +14,8 @@ const navLinks = [
 ]
 
 export default function NavBar() {
+  const pathname = usePathname()
+  const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -21,6 +24,15 @@ export default function NavBar() {
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault()
+    if (pathname === '/') {
+      document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      router.push(`/${href}`)
+    }
+  }
 
   return (
     <motion.nav
@@ -32,14 +44,19 @@ export default function NavBar() {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="#hero" className="font-mono text-cyan-neon text-lg font-bold glow-text">
+        <a
+          href={pathname === '/' ? '#hero' : '/#hero'}
+          onClick={e => handleNavClick(e, '#hero')}
+          className="font-mono text-cyan-neon text-lg font-bold glow-text"
+        >
           collin<span className="text-white">space</span>
         </a>
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map(link => (
             <a
               key={link.href}
-              href={link.href}
+              href={pathname === '/' ? link.href : `/${link.href}`}
+              onClick={e => handleNavClick(e, link.href)}
               className="text-sm text-slate-400 hover:text-cyan-neon transition-colors duration-200 font-mono"
             >
               {link.label}
@@ -70,8 +87,8 @@ export default function NavBar() {
               {navLinks.map(link => (
                 <a
                   key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
+                  href={pathname === '/' ? link.href : `/${link.href}`}
+                  onClick={e => { setMenuOpen(false); handleNavClick(e, link.href) }}
                   className="text-sm text-slate-400 hover:text-cyan-neon transition-colors font-mono"
                 >
                   {link.label}
