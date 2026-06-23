@@ -23,19 +23,19 @@ export default function Projects({ items }: { items: Project[] }) {
             : project.description
               ? [project.description]
               : []
-          const truncated = !isExpanded && content.length > 3
+          const truncated = !isExpanded && content.length > 2
 
           return (
             <motion.div
               key={project.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
               whileHover={{ y: -5 }}
-              className="snap-start shrink-0 w-[340px] lg:w-[380px] glass rounded-2xl p-6 border-glow hover:glow-cyan-sm transition-all duration-300 flex flex-col"
+              className="snap-start shrink-0 w-[340px] lg:w-[380px] h-[480px] glass rounded-2xl p-6 border-glow hover:glow-cyan-sm transition-all duration-300 flex flex-col overflow-hidden"
             >
               {project.imageUrl && (
-                <div className="relative w-full h-40 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl">
+                <div className="relative w-full h-48 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl shrink-0">
                   <img
                     src={project.imageUrl}
                     alt={project.title}
@@ -49,16 +49,16 @@ export default function Projects({ items }: { items: Project[] }) {
                   ★ Featured
                 </span>
               )}
-              <h3 className="text-white font-semibold text-lg mb-2">{project.title}</h3>
+              <h2 className="text-white font-semibold text-lg mb-2">{project.title}</h2>
               {content.length > 0 && (
                 <div className="flex-1 mb-4">
-                  {(truncated ? content.slice(0, 3) : content).map((point, i) => (
+                  {(truncated ? content.slice(0, 2) : content).map((point, i) => (
                     <p key={i} className="text-slate-400 text-sm leading-relaxed flex gap-2 mb-1">
                       <span className="text-cyan-neon mt-0.5 shrink-0">▸</span>
                       <span>{point}</span>
                     </p>
                   ))}
-                  {content.length > 3 && (
+                  {content.length > 2 && (
                     <button
                       onClick={() => toggleExpand(project.id)}
                       className="text-xs font-mono text-indigo-400 hover:text-indigo-300 mt-1 transition-colors"
