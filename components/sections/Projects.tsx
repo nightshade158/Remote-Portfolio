@@ -1,12 +1,29 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
 import SectionWrapper from '@/components/ui/SectionWrapper'
 import type { Project } from '@/lib/db/schema'
 
 function getContent(p: Project) {
   return p.points?.length ? p.points : p.description ? [p.description] : []
+}
+
+function truncateToWords(points: string[], maxWords: number) {
+  const result: string[] = []
+  let remaining = maxWords
+  for (const point of points) {
+    if (remaining <= 0) break
+    const words = point.trim().split(/\s+/)
+    if (words.length <= remaining) {
+      result.push(point)
+      remaining -= words.length
+    } else {
+      result.push(words.slice(0, remaining).join(' ') + '...')
+      remaining = 0
+    }
+  }
+  return { truncated: result, isTruncated: points.join(' ').split(/\s+/).filter(Boolean).length > maxWords }
 }
 
 export default function Projects({ items }: { items: Project[] }) {
@@ -20,6 +37,7 @@ export default function Projects({ items }: { items: Project[] }) {
       <div ref={ref} className="flex overflow-x-auto gap-6 snap-x snap-mandatory pb-4">
         {items.map((project, idx) => {
           const content = getContent(project)
+          const { truncated: truncatedContent, isTruncated } = truncateToWords(content, 15)
 
           return (
             <motion.div
@@ -51,13 +69,13 @@ export default function Projects({ items }: { items: Project[] }) {
                   className="flex-1 mb-4 w-full cursor-pointer"
                   onClick={() => setDescModal(project)}
                 >
-                  {content.slice(0, 2).map((point, i) => (
+                  {truncatedContent.map((point, i) => (
                     <p key={i} className="text-slate-400 text-sm leading-relaxed flex gap-2 mb-1">
                       <span className="text-cyan-neon mt-0.5 shrink-0">▸</span>
                       <span>{point}</span>
                     </p>
                   ))}
-                  {content.length > 2 && (
+                  {isTruncated && (
                     <p className="text-xs font-mono text-indigo-400 mt-2 text-center">Click to expand</p>
                   )}
                 </div>
@@ -102,45 +120,65 @@ export default function Projects({ items }: { items: Project[] }) {
         )}
       </div>
 
-      {descModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setDescModal(null)}
-        >
-          <div
-            className="bg-[#12121a] border border-[#27272f] rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
+      <AnimatePresence>
+        {descModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setDescModal(null)}
           >
-            <h3 className="text-white font-semibold text-lg mb-3">{descModal.title}</h3>
-            {getContent(descModal).map((point, i) => (
-              <p key={i} className="text-slate-300 text-sm leading-relaxed flex gap-2 mb-2">
-                <span className="text-cyan-neon mt-0.5 shrink-0">▸</span>
-                <span>{point}</span>
-              </p>
-            ))}
-            <button
-              onClick={() => setDescModal(null)}
-              className="mt-4 text-xs font-mono text-indigo-400 hover:text-indigo-300 transition-colors"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#12121a] border border-[#27272f] rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
             >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+              <h3 className="text-white font-semibold text-lg mb-3">{descModal.title}</h3>
+              {getContent(descModal).map((point, i) => (
+                <p key={i} className="text-slate-300 text-sm leading-relaxed flex gap-2 mb-2">
+                  <span className="text-cyan-neon mt-0.5 shrink-0">▸</span>
+                  <span>{point}</span>
+                </p>
+              ))}
+              <button
+                onClick={() => setDescModal(null)}
+                className="mt-4 text-xs font-mono text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {imageModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setImageModal(null)}
-        >
-          <img
-            src={imageModal}
-            alt="Enlarged"
-            className="max-w-[90vw] max-h-[90vh] rounded-2xl"
-            onClick={e => e.stopPropagation()}
-          />
-        </div>
-      )}
+      <AnimatePresence>
+        {imageModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setImageModal(null)}
+          >
+            <motion.img
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.2 }}
+              src={imageModal}
+              alt="Enlarged"
+              className="max-w-[90vw] max-h-[90vh] rounded-2xl"
+              onClick={e => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </SectionWrapper>
   )
 }
