@@ -47,6 +47,7 @@ export const projects = pgTable('projects', {
   id: uuid('id').defaultRandom().primaryKey(),
   title: text('title').notNull(),
   description: text('description'),
+  points: text('points').array(),
   techStack: text('tech_stack').array(),
   githubLink: text('github_link'),
   liveLink: text('live_link'),

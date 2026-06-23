@@ -156,6 +156,7 @@ function buildLatex(data: ResumeData): string {
 
   const projectsBody = projects.map(project => {
     const title = value(project, 'title') || 'Project'
+    const projectPoints = arrayValue(project, 'points')
     const description = value(project, 'description')
     const techStack = arrayValue(project, 'techStack')
     const githubLink = value(project, 'githubLink')
@@ -164,13 +165,16 @@ function buildLatex(data: ResumeData): string {
       githubLink ? `\\hrefWithoutArrow{${escapeUrl(githubLink)}}{Github}` : '',
       liveLink ? `\\hrefWithoutArrow{${escapeUrl(liveLink)}}{Live}` : ''
     ])
-    const points = compact([
-      description ? escapeLatex(description) : '',
+    const highlightItems = compact([
+      ...(projectPoints.length > 0
+        ? projectPoints.map(escapeLatex)
+        : description ? [escapeLatex(description)] : []
+      ),
       techStack.length > 0 ? `\\textbf{Technologies:} ${techStack.map(escapeLatex).join(', ')}` : '',
       links.length > 0 ? `\\textbf{Links:} ${links.join(', ')}` : ''
     ])
 
-    return `${twoCol('', `\\textbf{${escapeLatex(title)}}`)}\n${highlights(points)}`
+    return `${twoCol('', `\\textbf{${escapeLatex(title)}}`)}\n${highlights(highlightItems)}`
   }).join('\n\n')
 
   const certificationsBody = certifications.map(certification => {

@@ -38,7 +38,7 @@ export default function Skills({ items }: { items: Skill[] }) {
             <h3 className="font-mono text-xs text-slate-500 tracking-widest mb-4 uppercase">
               {category}
             </h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex overflow-x-auto gap-3 snap-x snap-mandatory pb-2">
               {skills.map((skill, idx) => (
                 <motion.span
                   key={skill.id}
@@ -46,7 +46,7 @@ export default function Skills({ items }: { items: Skill[] }) {
                   animate={isInView ? { opacity: 1, scale: 1 } : {}}
                   transition={{ duration: 0.3, delay: groupIdx * 0.1 + idx * 0.05 }}
                   whileHover={{ scale: 1.05 }}
-                  className={`px-4 py-2 rounded-lg border text-sm font-mono transition-all duration-200 cursor-default ${
+                  className={`snap-start shrink-0 px-4 py-2 rounded-lg border text-sm font-mono transition-all duration-200 cursor-default ${
                     categoryColors[category] ?? categoryColors.Other
                   }`}
                 >

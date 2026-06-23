@@ -7,10 +7,19 @@ export default async function Blog() {
 
   return (
     <SectionWrapper id="blog" title="Blog">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex overflow-x-auto gap-6 snap-x snap-mandatory pb-4">
         {posts.map((post) => (
-          <Link key={post.id} href={`/blog/${post.slug}`}>
+          <Link key={post.id} href={`/blog/${post.slug}`} className="snap-start shrink-0 w-[300px]">
             <article className="glass rounded-2xl p-6 border-glow hover:glow-cyan-sm transition-all duration-300 h-full flex flex-col cursor-pointer hover:-translate-y-1">
+              {post.coverImageUrl && (
+                <div className="w-full h-32 -mx-6 -mt-6 mb-3 overflow-hidden rounded-t-2xl">
+                  <img
+                    src={post.coverImageUrl}
+                    alt={post.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="flex flex-wrap gap-2 mb-3">
                 {post.tags?.slice(0, 3).map(tag => (
                   <span
@@ -30,7 +39,7 @@ export default async function Blog() {
           </Link>
         ))}
         {posts.length === 0 && (
-          <p className="text-slate-600 font-mono text-sm col-span-3 text-center">No blog posts published yet.</p>
+          <p className="text-slate-600 font-mono text-sm w-full text-center">No blog posts published yet.</p>
         )}
       </div>
     </SectionWrapper>
